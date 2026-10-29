@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Studio Project-Updater</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #121212; color: #eee; max-width: 680px; margin: 0 auto; padding: 14px; }
+    .card { background: #1e1e1e; border: 1px solid #333; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+    h2 { margin-top: 0; color: #8ab4f8; font-size: 1rem; margin-bottom: 8px; }
+    button { background: #8ab4f8; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; font-size: 0.92rem; }
+    .btn-green { background: #81c995; font-size: 1rem; padding: 14px; }
+    .btn-orange { background: #fbbc04; }
+    .btn-dark { background: #333; color: #fff; }
+    textarea { width: 100%; height: 90px; background: #111; color: #0f0; border: 1px solid #444; border-radius: 8px; padding: 8px; box-sizing: border-box; font-family: monospace; margin-top: 8px; font-size: 0.8rem; }
+    .status { margin-top: 8px; font-size: 0.85rem; color: #81c995; font-weight: bold; white-space: pre-wrap; }
+    .file-list { max-height: 180px; overflow-y: auto; background: #141414; border: 1px solid #333; border-radius: 8px; padding: 10px; margin-top: 8px; display: none; }
+    .file-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #222; font-size: 0.82rem; }
+    .folder-item { padding: 4px 0; border-bottom: 1px solid #222; font-size: 0.82rem; color: #fbbc04; font-weight: bold; }
+    .asset-item { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #222; font-size: 0.78rem; color: #888; }
+    .badge { color: #aaa; font-size: 0.75rem; }
+    details { margin-top: 10px; font-size: 0.82rem; color: #aaa; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>📂 1. Koppel & Stuur je Projectmap</h2>
+    <button class="btn-orange" onclick="selectFolder()">📂 1. Koppel mijn Project-Hoofdmap</button>
+    <div id="fileSelectorBox" class="file-list"></div>
+    <button onclick="exportProject()">📋 2. Kopieer Project voor AI Studio</button>
+    <button class="btn-dark" onclick="copyPrompt()">🔄 Kopieer Instructie (alleen bij Nieuwe Chat)</button>
+    <div id="folderStatus" class="status"></div>
+  </div>
+
+  <div class="card" style="border-color: #81c995;">
+    <h2>⚡ 2. Update je Map met 1 Tik!</h2>
+    <p style="font-size:0.82rem; color:#aaa; margin:0;">Tik in AI Studio op 'Kopieer' bij het JSON-blok van de AI en tik direct op deze groene knop (plakken is niet nodig!):</p>
+    <button class="btn-green" onclick="updateFromClipboard()">⚡ Lees Klembord & Update Map Direct!</button>
+    <div id="updateStatus" class="status"></div>
+
+    <details>
+      <summary style="cursor:pointer;">Of plak handmatig in een tekstvak...</summary>
+      <textarea id="aiPatchInput" placeholder='Plak hier handmatig het JSON-blok...'></textarea>
+      <button class="btn-dark" onclick="updateFolderDirectly(document.getElementById('aiPatchInput').value)">Update via Tekstvak</button>
+    </details>
+  </div>
+
+<script>
+  let dirHandle = null;
+  let scannedFiles = [];
+
+  function copyPrompt() {
+    const promptText = `SYSTEEM-INSTRUCTIE VOOR MIJN PROJECT (INCLUSIEF SUBMAPPEN):
+Ik gebruik mijn Pro Project-Updater tool. Jij hebt via deze tool toegang tot mijn hoofdmap én alle submappen daarbinnen.
+1. Voor kleine of compleet nieuwe bestanden (< 500 regels): stuur de 100% volledige code in "files" (bijv. "submap/bestand.js": "code...").
+2. Voor grote bestaande bestanden (> 500 regels): gebruik "edit" met exacte "search" en "replace" blokken zodat je antwoord nooit halverwege afbreekt!
+3. Gebruik "folders" om nieuwe mappen en submappen aan te maken.
+4. Gebruik "move" om bestaande bestanden of foto's naar submappen te verplaatsen.
+
+Geef aan het einde van je antwoord ALTIJD één geldig JSON-codeblok terug:
+\`\`\`json
+{
+  "folders": ["css", "js"],
+  "move": { "style.css": "css/style.css" },
+  "files": { "js/nieuw.js": "volledige code..." },
+  "edit": {
+    "index.html": [
+      { "search": "oude sectie...", "replace": "nieuwe sectie..." }
+    ]
+  },
+  "delete": []
+}
+\`\`\``;
+    navigator.clipboard.writeText(promptText);
+    alert("✅ Instructie gekopieerd!");
+  }
+
+  async function selectFolder() {
+    try {
+      dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      await refreshFileList();
+    } catch (err) {
+      document.getElementById('folderStatus').textContent = "❌ Geen map geselecteerd.";
+    }
+  }
+
+  async function scanDir(handle, path = "") {
+    let entries = [];
+    for await (const [name, entry] of handle.entries()) {
+      if (/^(node_modules|\.git|\.DS_Store|updater\.html)$/i.test(name)) continue;
+      const fullPath = path ? `${path}/${name}` : name;
+      if (entry.kind === 'directory') {
+        entries.push({ path: fullPath + "/", kind: 'dir' });
+        entries = entries.concat(await scanDir(entry, fullPath));
+      } else {
+        entries.push({ path: fullPath, kind: 'file', handle: entry });
+      }
+    }
+    return entries;
+  }
+
+  async function refreshFileList() {
+    const status = document.getElementById('folderStatus');
+    const box = document.getElementById('fileSelectorBox');
+    status.textContent = "⏳ Scannen...";
+    scannedFiles = await scanDir(dirHandle);
+    const textExt = /\.(html|htm|css|js|json|txt|md|svg|xml|php)$/i;
+
+    let html = `<div style="margin-bottom:6px; font-weight:bold; color:#8ab4f8;">Inhoud van "${dirHandle.name}":</div>`;
+    let totalLines = 0;
+    let folderCount = 0;
+
+    for (let i = 0; i < scannedFiles.length; i++) {
+      const item = scannedFiles[i];
+      if (item.kind === 'dir') {
+        folderCount++;
+        html += `<div class="folder-item">📁 ${item.path}</div>`;
+      } else if (item.kind === 'file' && textExt.test(item.path)) {
+        const f = await item.handle.getFile();
+        const txt = await f.text();
+        const lines = txt.split('\n').length;
+        item.lines = lines;
+        item.content = txt;
+        totalLines += lines;
+        html += `<label class="file-item">
+          <span><input type="checkbox" class="file-chk" data-idx="${i}" checked> 📄 ${item.path}</span>
+          <span class="badge">${lines} r.</span>
+        </label>`;
+      } else {
+        html += `<div class="asset-item"><span>🖼️ ${item.path}</span></div>`;
+      }
+    }
+
+    box.innerHTML = html;
+    box.style.display = "block";
+    status.textContent = `✅ "${dirHandle.name}" gekoppeld (${folderCount} submappen, ${totalLines} regels).`;
+  }
+
+  async function exportProject() {
+    if (!dirHandle) return alert("Koppel eerst je projectmap bij stap 1!");
+    const checks = document.querySelectorAll('.file-chk');
+    
+    let out = `=== VOLLEDIGE MAPPEN- EN SUBMAPPEN-STRUCTUUR (${dirHandle.name}) ===\n`;
+    out += scannedFiles.map(e => (e.kind === 'dir' ? `[MAP] ${e.path}` : `[BESTAND] ${e.path}`)).join("\n") + "\n\n=== GESELECTEERDE BESTANDSINHOUD ===\n";
+
+    checks.forEach(chk => {
+      if (chk.checked) {
+        const item = scannedFiles[chk.getAttribute('data-idx')];
+        out += `\n--- START BESTAND: ${item.path} (${item.lines} regels) ---\n${item.content}\n--- EINDE BESTAND: ${item.path} ---\n`;
+      }
+    });
+
+    await navigator.clipboard.writeText(out);
+    document.getElementById('folderStatus').textContent = `✅ Gekopieerd! Plak het nu in AI Studio.`;
+  }
+
+  function cleanPath(path, rootName) {
+    let p = path.replace(/^\/+/, '');
+    if (rootName && p.startsWith(rootName + '/')) p = p.substring(rootName.length + 1);
+    return p;
+  }
+
+  async function getDirRecursive(root, pathParts, create = true) {
+    let current = root;
+    for (const part of pathParts) {
+      if (part) current = await current.getDirectoryHandle(part, { create });
+    }
+    return current;
+  }
+
+  async function getFileHandleByPath(root, fullPath, create = false) {
+    const parts = fullPath.split('/').filter(Boolean);
+    const fileName = parts.pop();
+    const dir = await getDirRecursive(root, parts, create);
+    return await dir.getFileHandle(fileName, { create });
+  }
+
+  async function removeByPath(root, fullPath) {
+    try {
+      const parts = fullPath.split('/').filter(Boolean);
+      const name = parts.pop();
+      const dir = await getDirRecursive(root, parts, false);
+      await dir.removeEntry(name, { recursive: true });
+    } catch (e) {}
+  }
+
+  async function updateFromClipboard() {
+    try {
+      const clipText = await navigator.clipboard.readText();
+      if (!clipText || !clipText.trim()) {
+        return alert("Je klembord is leeg! Tik eerst in AI Studio op het 'Kopieer'-icoontje bij het JSON-blok.");
+      }
+      await updateFolderDirectly(clipText);
+    } catch (err) {
+      document.getElementById('updateStatus').textContent = "⚠️ Geef toestemming voor het klembord of plak het blok hieronder handmatig.";
+    }
+  }
+
+  async function updateFolderDirectly(rawInput) {
+    const status = document.getElementById('updateStatus');
+    if (!dirHandle) return alert("Koppel eerst bovenaan je Project-Hoofdmap!");
+
+    let rawPatch = (rawInput || "").trim();
+    if (!rawPatch) return alert("Geen JSON-blok gevonden!");
+    rawPatch = rawPatch.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
+
+    try {
+      const patch = JSON.parse(rawPatch);
+      status.textContent = "⏳ Bezig met bijwerken...";
+      let warnings = [];
+
+      if (patch.folders && Array.isArray(patch.folders)) {
+        for (const f of patch.folders) {
+          const parts = cleanPath(f, dirHandle.name).split('/').filter(Boolean);
+          await getDirRecursive(dirHandle, parts, true);
+        }
+      }
+
+      if (patch.move && typeof patch.move === 'object') {
+        for (const [oldP, newP] of Object.entries(patch.move)) {
+          const srcPath = cleanPath(oldP, dirHandle.name);
+          const destPath = cleanPath(newP, dirHandle.name);
+          if (srcPath === destPath) continue;
+          try {
+            const srcHandle = await getFileHandleByPath(dirHandle, srcPath, false);
+            const fileData = await srcHandle.getFile();
+            const buffer = await fileData.arrayBuffer();
+            const destHandle = await getFileHandleByPath(dirHandle, destPath, true);
+            const writable = await destHandle.createWritable();
+            await writable.write(buffer);
+            await writable.close();
+            await removeByPath(dirHandle, srcPath);
+          } catch (e) {
+            warnings.push(`Kon niet verplaatsen: ${srcPath}`);
+          }
+        }
+      }
+
+      if (patch.files && typeof patch.files === 'object') {
+        for (const [filePath, fileContent] of Object.entries(patch.files)) {
+          const target = cleanPath(filePath, dirHandle.name);
+          const fileHandle = await getFileHandleByPath(dirHandle, target, true);
+          const writable = await fileHandle.createWritable();
+          await writable.write(fileContent);
+          await writable.close();
+        }
+      }
+
+      if (patch.edit && typeof patch.edit === 'object') {
+        for (const [filePath, edits] of Object.entries(patch.edit)) {
+          const target = cleanPath(filePath, dirHandle.name);
+          const fileHandle = await getFileHandleByPath(dirHandle, target, false);
+          const fileData = await fileHandle.getFile();
+          let content = (await fileData.text()).replace(/\r\n/g, '\n');
+
+          for (const item of edits) {
+            const s = item.search.replace(/\r\n/g, '\n').trim();
+            const r = item.replace(/\r\n/g, '\n');
+            if (content.includes(s)) {
+              content = content.replace(s, r);
+            } else {
+              warnings.push(`⚠️ Zoekblok niet exact gevonden in ${target}`);
+            }
+          }
+
+          const writable = await fileHandle.createWritable();
+          await writable.write(content);
+          await writable.close();
+        }
+      }
+
+      if (patch.delete && Array.isArray(patch.delete)) {
+        for (const delPath of patch.delete) {
+          await removeByPath(dirHandle, cleanPath(delPath, dirHandle.name));
+        }
+      }
+
+      await refreshFileList();
+      status.textContent = warnings.length > 0
+        ? `✅ Bijgewerkt met meldingen:\n` + warnings.join("\n")
+        : `✅ 100% GELUKT! "${dirHandle.name}" is direct bijgewerkt!`;
+    } catch (err) {
+      status.textContent = "❌ Geen geldig JSON-blok op je klembord gevonden (" + err.message + ")";
+    }
+  }
+</script>
+</body>
+</html>
