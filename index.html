@@ -46,6 +46,82 @@
       transform: translateY(3px);
     }
 
+    /* === POINT 1: WORKSPACE ANIMATIONS (CONNECT, REFRESH, DISCONNECT) === */
+    @keyframes wsConnectAnim {
+      0% {
+        opacity: 0.25;
+        transform: scale(0.975) translateY(10px);
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.55), 0 24px 60px rgba(16, 185, 129, 0.2);
+      }
+      60% {
+        box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35), 0 24px 60px rgba(0, 0, 0, 0.55);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      }
+    }
+
+    @keyframes wsRefreshPulse {
+      0% {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4), 0 24px 60px rgba(59, 130, 246, 0.15);
+      }
+      50% {
+        transform: translateY(-2px);
+      }
+      100% {
+        border-color: var(--border);
+        transform: translateY(0);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      }
+    }
+
+    @keyframes wsScanSweep {
+      0% { transform: translateX(-100%); opacity: 0.7; }
+      100% { transform: translateX(100%); opacity: 0; }
+    }
+
+    @keyframes wsDisconnectAnim {
+      0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+      100% {
+        opacity: 0.15;
+        transform: scale(0.97) translateY(8px);
+      }
+    }
+
+    .workspace-panel {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .workspace-panel.anim-connect {
+      animation: wsConnectAnim 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .workspace-panel.anim-refresh {
+      animation: wsRefreshPulse 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .workspace-panel.anim-refresh::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.12), rgba(16, 185, 129, 0.12), transparent);
+      pointer-events: none;
+      animation: wsScanSweep 0.55s ease-out forwards;
+    }
+    .workspace-panel.anim-disconnect {
+      animation: wsDisconnectAnim 0.24s ease-in forwards;
+    }
+
     /* === NAVBAR === */
     .navbar {
       position: sticky;
@@ -278,25 +354,50 @@
       font-size: 0.84rem;
       color: var(--text-muted);
     }
-    .workspace-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 20px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-    }
 
-    /* Floating header visible ONLY inside the PiP window */
+    /* === POINT 4: CLEAN FLOATING PIP HEADER === */
     .pip-FloatingHeader {
       display: none;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(139, 92, 246, 0.18));
-      border: 1px solid rgba(139, 92, 246, 0.4);
+      background: #0c0c12;
+      border: 1px solid var(--border-light);
       border-radius: 10px;
       padding: 8px 10px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
+    }
+    .pip-status-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      flex: 1;
+    }
+    .pip-folder-name {
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: #fff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 120px;
+    }
+    .pip-stats-pill {
+      font-family: monospace;
+      font-size: 0.69rem;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 2px 6px;
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+    .pip-actions-right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
     }
 
     /* === WORKSPACE TOPBAR === */
@@ -798,18 +899,80 @@
       white-space: nowrap;
     }
 
+    /* === POINT 3: LIVE TOKEN ESTIMATOR BAR (STEP 2) === */
+    .token-estimator-bar {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 7px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .token-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.74rem;
+    }
+    .token-count-num {
+      font-family: monospace;
+      font-weight: 800;
+      color: #e5e7eb;
+    }
+    .token-level-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: 999px;
+    }
+    .token-level-pill.tok-low {
+      background: rgba(16, 185, 129, 0.14);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .token-level-pill.tok-med {
+      background: rgba(245, 158, 11, 0.14);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .token-level-pill.tok-high {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .token-meter-track {
+      width: 100%;
+      height: 4px;
+      background: #161622;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .token-meter-fill {
+      height: 100%;
+      width: 5%;
+      background: var(--green);
+      border-radius: 999px;
+      transition: width 0.2s ease, background-color 0.2s ease;
+    }
+
     /* === PROMPT FIELD, PRIMARY COPY GROUP & DELTA SYNC (STEP 2) === */
     textarea.prompt-input {
       width: 100%;
-      min-height: 135px;
+      min-height: 120px;
       flex: 1;
       background: var(--bg-input);
       color: #fff;
       border: 1px solid var(--border-light);
       border-radius: 10px;
-      padding: 12px;
+      padding: 11px 12px;
       font-family: inherit;
-      font-size: 0.87rem;
+      font-size: 0.86rem;
       resize: vertical;
       line-height: 1.5;
     }
@@ -819,7 +982,6 @@
       box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22);
     }
 
-    /* Primary action group visually links "Copy Project + Prompt" & the System Instructions checkbox */
     .copy-primary-group {
       background: rgba(59, 130, 246, 0.06);
       border: 1px solid rgba(59, 130, 246, 0.3);
@@ -833,7 +995,7 @@
       display: flex;
       align-items: flex-start;
       gap: 8px;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       line-height: 1.35;
       color: #bfdbfe;
       padding: 2px 2px 0;
@@ -873,7 +1035,7 @@
       border: 1px solid rgba(245, 158, 11, 0.4);
       border-radius: 9px;
       padding: 8px 10px;
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       color: #fde68a;
       align-items: center;
       justify-content: space-between;
@@ -907,7 +1069,7 @@
       resize: vertical;
     }
 
-    /* === LIVE PROGRESS BAR & UNDO BOX (STEP 3) === */
+    /* === LIVE PROGRESS BAR, TRUNCATED JSON RECOVERY & UNDO BOX (STEP 3) === */
     .update-progress-box {
       display: none;
       background: var(--bg-input);
@@ -962,6 +1124,34 @@
       text-overflow: ellipsis;
     }
 
+    /* Truncated JSON Limit Recovery Box */
+    .truncated-json-box {
+      display: none;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      border-radius: 10px;
+      padding: 11px 12px;
+      flex-direction: column;
+      gap: 8px;
+      animation: viewFadeIn 0.18s ease-out;
+    }
+    .truncated-json-box.show {
+      display: flex;
+    }
+    .truncated-json-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #fca5a5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .truncated-json-desc {
+      font-size: 0.74rem;
+      color: #fecaca;
+      line-height: 1.4;
+    }
+
     .undo-box {
       display: none;
       background: rgba(245, 158, 11, 0.08);
@@ -976,7 +1166,7 @@
       display: flex;
     }
     .undo-box-info {
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       color: #fde68a;
       display: flex;
       align-items: center;
@@ -1101,33 +1291,73 @@
       font-size: 0.74rem;
     }
 
-    /* === FLOATING WINDOW MODE (PIP-MODE) === */
+    /* === POINT 4: CLEAN, STREAMLINED FLOATING WINDOW MODE (PIP-MODE) === */
     body.pip-mode {
-      padding: 8px;
+      padding: 6px;
       background: var(--bg-main);
     }
     body.pip-mode .workspace-panel {
-      padding: 10px;
+      padding: 8px;
       border: none;
       box-shadow: none;
+      background: transparent;
     }
     body.pip-mode .pip-FloatingHeader {
       display: flex !important;
     }
-    body.pip-mode .tool-grid.three-col {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
+    body.pip-mode .workspace-topbar,
+    body.pip-mode .overview-top,
+    body.pip-mode .overview-stats-grid,
+    body.pip-mode .ongoing-chat-divider,
     body.pip-mode .hide-in-pip {
       display: none !important;
     }
+    body.pip-mode .tool-grid.three-col {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    body.pip-mode .tool-box {
+      padding: 11px 12px;
+      gap: 7px;
+      border-radius: 11px;
+    }
+    body.pip-mode .step-num {
+      width: 22px;
+      height: 22px;
+      font-size: 0.74rem;
+    }
+    body.pip-mode .tool-box h3 {
+      font-size: 0.9rem;
+    }
+    body.pip-mode .folder-overview-card {
+      padding: 0;
+      background: transparent;
+      border: none;
+    }
     body.pip-mode textarea.prompt-input {
-      min-height: 90px;
+      min-height: 68px;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+    }
+    body.pip-mode .copy-primary-group {
+      padding: 8px;
+      gap: 6px;
+    }
+    body.pip-mode .btn {
+      padding: 8px 12px;
+      font-size: 0.81rem;
+    }
+    body.pip-mode .btn-green {
+      padding: 10px 14px;
+      font-size: 0.88rem;
+    }
+    body.pip-mode .file-list {
+      max-height: 150px;
     }
     body.pip-mode .toast-container {
-      bottom: 10px;
-      right: 10px;
-      left: 10px;
+      bottom: 8px;
+      right: 8px;
+      left: 8px;
       width: auto;
     }
 
@@ -1427,17 +1657,25 @@
         <div id="workspaceHolder">
           <div id="workspacePanel" class="workspace-panel">
 
-            <!-- Topbar visible ONLY inside the floating PiP window -->
+            <!-- POINT 4: COMPACT, CLEAN PIP HEADER (VISIBLE ONLY IN FLOATING PIP WINDOW) -->
             <div class="pip-FloatingHeader">
-              <a href="https://aistudio.google.com/" target="_blank" rel="noopener" class="btn btn-blue btn-xs" style="flex:1;" data-i18n="pip_hdr_ai">
-                💬 To AI Studio ↗
-              </a>
-              <button type="button" id="closePipFloatingBtn" class="btn btn-red btn-xs" data-i18n="pip_hdr_close">
-                ✕ Close Floating
-              </button>
+              <div class="pip-status-left">
+                <span id="pipConnDot" class="status-dot"></span>
+                <span id="pipConnName" class="pip-folder-name">No folder</span>
+                <span id="pipStatsPill" class="pip-stats-pill">0 f • ~0 tok</span>
+              </div>
+              <div class="pip-actions-right">
+                <button type="button" id="pipRefreshBtn" class="btn btn-xs" data-i18n-title="title_refresh" title="Rescan folder">🔄</button>
+                <a href="https://aistudio.google.com/" target="_blank" rel="noopener" class="btn btn-blue btn-xs" data-i18n="pip_hdr_ai">
+                  💬 AI Studio ↗
+                </a>
+                <button type="button" id="closePipFloatingBtn" class="btn btn-red btn-xs" data-i18n-title="pip_hdr_close" title="Close Floating Window">
+                  ✕
+                </button>
+              </div>
             </div>
             
-            <!-- WORKSPACE TOPBAR -->
+            <!-- WORKSPACE TOPBAR (HIDDEN IN PIP FOR MINIMALISM) -->
             <div class="workspace-topbar">
               <!-- Left: Folder Status & Controls -->
               <div class="menu-left">
@@ -1547,7 +1785,7 @@
                 </div>
               </div>
 
-              <!-- STEP 2: PROMPT, GROUPED PRIMARY COPY & ONGOING CHAT SYNC -->
+              <!-- STEP 2: PROMPT, TOKEN COUNTER, GROUPED PRIMARY COPY & ONGOING CHAT SYNC -->
               <div class="tool-box highlight-blue">
                 <div class="step-header">
                   <div class="step-title-group">
@@ -1557,6 +1795,17 @@
                 </div>
 
                 <textarea id="userPromptInput" class="prompt-input" data-i18n-placeholder="step2_placeholder" placeholder="Type what you want to build or change in your project folder..."></textarea>
+
+                <!-- POINT 3: LIVE INPUT TOKEN ESTIMATOR -->
+                <div class="token-estimator-bar">
+                  <div class="token-row-top">
+                    <span><span data-i18n="tok_label">Estimated package size:</span> <strong id="tokenCountVal" class="token-count-num">~0 tokens</strong></span>
+                    <span id="tokenLevelPill" class="token-level-pill tok-low">🟢 Fast / Compact</span>
+                  </div>
+                  <div class="token-meter-track">
+                    <div id="tokenMeterFill" class="token-meter-fill"></div>
+                  </div>
+                </div>
 
                 <!-- Primary Action Box: Visually couples "Copy Project + Prompt" with the System Instruction checkbox -->
                 <div class="copy-primary-group">
@@ -1591,7 +1840,7 @@
                 </div>
               </div>
 
-              <!-- STEP 3: 1-CLICK UPDATE, LIVE PROGRESS & 1-CLICK UNDO -->
+              <!-- STEP 3: 1-CLICK UPDATE, LIVE PROGRESS, TRUNCATED JSON RECOVERY & 1-CLICK UNDO -->
               <div class="tool-box highlight-green">
                 <div class="step-header">
                   <div class="step-title-group">
@@ -1614,6 +1863,20 @@
                     <div id="progressBarFill" class="progress-bar-fill"></div>
                   </div>
                   <div id="progressCurrentFile" class="progress-current-file">-</div>
+                </div>
+
+                <!-- POINT 3: TRUNCATED JSON (OUTPUT TOKEN LIMIT) RECOVERY BOX -->
+                <div id="truncatedJsonBox" class="truncated-json-box">
+                  <div class="truncated-json-title">
+                    <span>⚠️</span>
+                    <span data-i18n="trunc_box_title">AI Output Token Limit Reached (Cut-off JSON)</span>
+                  </div>
+                  <p class="truncated-json-desc" data-i18n="trunc_box_desc">
+                    The JSON block on your clipboard was cut off halfway because the AI reached its maximum response length. Click below to copy a recovery prompt so the AI sends a compact or split JSON update.
+                  </p>
+                  <button type="button" id="copyContinueJsonBtn" class="btn btn-red btn-sm btn-full" data-i18n="btn_copy_continue_json">
+                    📋 Copy "Continue / Compact JSON" Prompt
+                  </button>
                 </div>
 
                 <!-- 1-Click Undo / Rollback Box (appears after a JSON update) -->
@@ -1807,9 +2070,11 @@
   let currentView = 'workspace';
   let isFileDrawerCollapsed = false;
   let langAnimTimer = null;
+  let wsAnimTimer = null;
   let isMutatingDisk = false;
   let autoRefreshInterval = null;
   let lastUndoSnapshot = null; // Stores snapshot before last JSON update
+  let lastTruncatedTail = ''; // Stores tail of truncated JSON when output token limit is hit
   let aiBaselineSnapshot = new Map(); // Stores file state last synced with AI
   let hasBaselineInitialized = false; // Tracks whether baseline exists for current folder
   const statusTimers = {};
@@ -1851,8 +2116,8 @@
       pip_ph_desc: 'Switch to your <strong>Google AI Studio</strong> tab. The floating window stays visible <strong>on top of your chat</strong> so you can control everything from one screen.',
       pip_ph_open_ai: '💬 Open Google AI Studio ↗',
       pip_ph_close: '✕ Close floating window & restore',
-      pip_hdr_ai: '💬 To AI Studio ↗',
-      pip_hdr_close: '✕ Close Floating',
+      pip_hdr_ai: '💬 AI Studio ↗',
+      pip_hdr_close: 'Close Floating Window',
       no_folder_linked: 'No folder linked',
       saved_folder_badge: 'Saved folder: {name}',
       reconnect_ready: 'Last opened folder "{name}" is ready:',
@@ -1883,6 +2148,12 @@
       badge_new: 'new',
       step2_title: 'Prompt & Copy',
       step2_placeholder: 'Type what you want to build or change in your project folder...',
+      tok_label: 'Estimated package size:',
+      tok_unit: '~{count} tokens',
+      tok_low: '🟢 Fast / Compact',
+      tok_med: '🟠 Large Context',
+      tok_high: '🔴 Very Large (deselect unused files)',
+      pip_stats_badge: '{files} f • ~{tokens} tok',
       chk_include_sys: 'Include AI system instructions (only for Copy Project + Prompt in a new chat)',
       ongoing_divider_lbl: 'Ongoing chat & extra options',
       delta_banner_text: '⚡ {count} manual local change(s) detected since last AI sync',
@@ -1895,6 +2166,9 @@
       title_download_txt: 'Download as text file',
       step3_title: 'Update Folder',
       btn_update_clip: '⚡ Read Clipboard & Update Folder',
+      trunc_box_title: 'AI Output Token Limit Reached (Cut-off JSON)',
+      trunc_box_desc: 'The JSON block on your clipboard was cut off halfway because the AI reached its maximum response length. Click below to copy a recovery prompt so the AI sends a compact or split JSON update.',
+      btn_copy_continue_json: '📋 Copy "Continue / Compact JSON" Prompt',
       undo_info_ready: 'Snapshot before last update ({count} item(s) • {time})',
       btn_undo_update: '↩️ Undo Last Update (Restore Backup)',
       manual_json_summary: 'Manually paste JSON code block...',
@@ -1928,7 +2202,7 @@
       code_preview: `// Example of an AI JSON update:\n{\n  "folders": ["css", "js"],\n  "move": {\n    "old.css": "css/style.css"\n  },\n  "files": {\n    "js/new.js": "// Full code for a brand new file..."\n  },\n  "edit": {\n    "index.html": [\n      {\n        "search": "<h1>Old Title</h1>",\n        "replace": "<h1>New Title</h1>"\n      }\n    ]\n  },\n  "delete": ["old.txt"]\n}`,
       footer_line1: '<strong>AI Folder Sync</strong> — Open-Source Local Project Manager for Google AI Studio.',
       footer_line2: 'View source code on <a href="https://github.com/ivannijdam08-web/ai-folder-sync" target="_blank" rel="noopener">GitHub</a>.',
-      // Dynamic file tree, progress, undo, auto-refresh & toast strings
+      // Dynamic file tree, progress, undo, auto-refresh, missing folder & toast strings
       tree_empty_banner_title: '🌱 Empty Project (0 files)',
       tree_empty_banner_desc: 'This folder is completely empty. Type what you want to build in Step 2.',
       lines_short: 'l.',
@@ -1942,6 +2216,8 @@
       prog_undo_done: 'Reverted! {total} / {total} items restored',
       st_auto_refresh_title: 'Auto-Refresh: Local changes detected',
       st_auto_refresh_desc: 'Your file list was automatically updated to match your disk.',
+      st_folder_missing_title: 'Folder "{name}" no longer found',
+      st_folder_missing_desc: 'The linked folder was renamed, moved, or deleted on your computer. The connection was closed—please link the folder again.',
       st_undo_ok_title: 'Last update undone!',
       st_undo_ok_desc: 'Your project folder "{name}" has been restored to its previous state:',
       st_undo_err_title: 'Undo failed',
@@ -2015,6 +2291,10 @@
       st_updated_ok_desc: '{count} action(s) successfully applied to your drive:',
       st_updated_warn_title: 'Updated with {warns} warning(s)',
       st_updated_warn_desc: '{count} action(s) succeeded, please check the notes below:',
+      st_truncated_json_title: 'AI Response Cut Off (Token Limit)',
+      st_truncated_json_desc: 'The JSON block was cut off halfway by the AI\'s output token limit. Use the red button in Step 3 to copy a recovery prompt!',
+      st_continue_copied_title: 'Recovery prompt copied!',
+      st_continue_copied_desc: 'Paste this into your AI Studio chat so the AI sends a compact or split JSON update.',
       st_invalid_json_title: 'Invalid JSON block on clipboard',
       st_invalid_json_desc: 'Click the Copy icon in the top-right corner of the AI\'s JSON code block in Google AI Studio ({msg}).'
     },
@@ -2039,8 +2319,8 @@
       pip_ph_desc: 'Ga naar je <strong>Google AI Studio</strong> tabblad. Het zwevende venstertje blijft automatisch <strong>bovenop je chat</strong> zichtbaar zodat je alles vanuit één scherm bedient.',
       pip_ph_open_ai: '💬 Open Google AI Studio ↗',
       pip_ph_close: '✕ Sluit zwevend venster & zet terug',
-      pip_hdr_ai: '💬 Naar AI Studio ↗',
-      pip_hdr_close: '✕ Sluit Zweven',
+      pip_hdr_ai: '💬 AI Studio ↗',
+      pip_hdr_close: 'Sluit Zwevend Venster',
       no_folder_linked: 'Geen map gekoppeld',
       saved_folder_badge: 'Opgeslagen map: {name}',
       reconnect_ready: 'Laatst geopende map "{name}" staat klaar:',
@@ -2071,6 +2351,12 @@
       badge_new: 'nieuw',
       step2_title: 'Prompt & Kopiëren',
       step2_placeholder: 'Typ hier wat je wilt maken of veranderen in je projectmap...',
+      tok_label: 'Geschatte pakketgrootte:',
+      tok_unit: '~{count} tokens',
+      tok_low: '🟢 Klein / Snel',
+      tok_med: '🟠 Grote Context',
+      tok_high: '🔴 Extreem groot (vink bestanden uit)',
+      pip_stats_badge: '{files} b • ~{tokens} tok',
       chk_include_sys: 'AI-systeeminstructie meesturen (alleen bij Kopieer Project + Prompt voor nieuwe chat)',
       ongoing_divider_lbl: 'Lopende chat & extra opties',
       delta_banner_text: '⚡ {count} handmatige wijziging(en) gedetecteerd sinds laatste AI-sync',
@@ -2083,6 +2369,9 @@
       title_download_txt: 'Download als tekstbestand',
       step3_title: 'Map Bijwerken',
       btn_update_clip: '⚡ Lees Klembord & Update Map',
+      trunc_box_title: 'AI Token-limiet Bereikt (Afgekapte JSON)',
+      trunc_box_desc: 'Het JSON-blok op je klembord is halverwege afgekapt doordat de AI zijn maximale antwoordlengte heeft bereikt. Klik hieronder om een herstel-prompt te kopiëren zodat de AI een compactere of opgesplitste JSON stuurt.',
+      btn_copy_continue_json: '📋 Kopieer "Hervat / Compacte JSON" Prompt',
       undo_info_ready: 'Back-up vóór laatste update ({count} item(s) • {time})',
       btn_undo_update: '↩️ Laatste Update Terugdraaien (Undo)',
       manual_json_summary: 'Handmatig JSON-codeblok plakken...',
@@ -2116,7 +2405,7 @@
       code_preview: `// Voorbeeld van een JSON-update van de AI:\n{\n  "folders": ["css", "js"],\n  "move": {\n    "oud.css": "css/style.css"\n  },\n  "files": {\n    "js/nieuw.js": "// Volledige code voor nieuw bestand..."\n  },\n  "edit": {\n    "index.html": [\n      {\n        "search": "<h1>Oude Titel</h1>",\n        "replace": "<h1>Nieuwe Titel</h1>"\n      }\n    ]\n  },\n  "delete": ["oud.txt"]\n}`,
       footer_line1: '<strong>AI Folder Sync</strong> — Open-Source Lokaal Projectbeheer voor Google AI Studio.',
       footer_line2: 'Broncode bekijken? Ga naar <a href="https://github.com/ivannijdam08-web/ai-folder-sync" target="_blank" rel="noopener">GitHub</a>.',
-      // Dynamic file tree, progress, undo, auto-refresh & toast strings
+      // Dynamic file tree, progress, undo, auto-refresh, missing folder & toast strings
       tree_empty_banner_title: '🌱 Leeg Project (0 bestanden)',
       tree_empty_banner_desc: 'Deze map is nog helemaal leeg. Typ bij Stap 2 wat je wilt bouwen.',
       lines_short: 'r.',
@@ -2130,6 +2419,8 @@
       prog_undo_done: 'Teruggedraaid! {total} / {total} items hersteld',
       st_auto_refresh_title: 'Auto-Refresh: Lokale wijziging herkend',
       st_auto_refresh_desc: 'Je bestandslijst is automatisch bijgewerkt met je harde schijf.',
+      st_folder_missing_title: 'Map "{name}" niet meer gevonden',
+      st_folder_missing_desc: 'De gekoppelde projectmap is op je computer van naam veranderd, verplaatst of verwijderd. De koppeling is gesloten—koppel de map opnieuw.',
       st_undo_ok_title: 'Laatste update teruggedraaid!',
       st_undo_ok_desc: 'Je projectmap "{name}" is hersteld naar de staat vóór de laatste JSON-update:',
       st_undo_err_title: 'Terugdraaien mislukt',
@@ -2203,6 +2494,10 @@
       st_updated_ok_desc: '{count} actie(s) succesvol uitgevoerd op je schijf:',
       st_updated_warn_title: 'Bijgewerkt met {warns} aandachtspunt(en)',
       st_updated_warn_desc: '{count} actie(s) gelukt, controleer onderstaande meldingen:',
+      st_truncated_json_title: 'AI-antwoord afgekapt (Token-limiet)',
+      st_truncated_json_desc: 'Het JSON-blok is halverwege afgebroken door de output-limiet van de AI. Klik op de rode knop in Stap 3 om een herstel-prompt te kopiëren!',
+      st_continue_copied_title: 'Herstel-prompt gekopieerd!',
+      st_continue_copied_desc: 'Plak dit in je AI Studio chat zodat de AI een compactere of opgesplitste JSON-update stuurt.',
       st_invalid_json_title: 'Ongeldig JSON-blok op klembord',
       st_invalid_json_desc: 'Klik in Google AI Studio op het Kopieer-icoontje rechtsboven het JSON-codeblok van de AI ({msg}).'
     }
@@ -2215,6 +2510,28 @@
       str = str.replace(new RegExp(`\\{\\s*${k}\\s*\\}`, 'g'), String(v));
     }
     return str;
+  }
+
+  // === POINT 1: TRIGGER SMOOTH WORKSPACE ANIMATIONS ===
+  function triggerWorkspaceAnimation(type) {
+    const doc = getDoc();
+    const panel = doc.getElementById('workspacePanel');
+    if (!panel) return;
+
+    if (wsAnimTimer) mainWindow.clearTimeout(wsAnimTimer);
+    panel.classList.remove('anim-connect', 'anim-refresh', 'anim-disconnect');
+    void panel.offsetWidth;
+
+    if (type === 'connect') {
+      panel.classList.add('anim-connect');
+      wsAnimTimer = mainWindow.setTimeout(() => panel.classList.remove('anim-connect'), 460);
+    } else if (type === 'refresh') {
+      panel.classList.add('anim-refresh');
+      wsAnimTimer = mainWindow.setTimeout(() => panel.classList.remove('anim-refresh'), 580);
+    } else if (type === 'disconnect') {
+      panel.classList.add('anim-disconnect');
+      wsAnimTimer = mainWindow.setTimeout(() => panel.classList.remove('anim-disconnect'), 260);
+    }
   }
 
   // === CLEAN URL HASH HELPER ===
@@ -2301,19 +2618,24 @@
 
     const doc = getDoc();
     const connLabel = doc.getElementById('connLabel');
+    const pipConnName = doc.getElementById('pipConnName');
     if (dirHandle) {
       if (connLabel) connLabel.textContent = dirHandle.name;
+      if (pipConnName) pipConnName.textContent = dirHandle.name;
       renderFileTreeUI();
       updateUndoBoxUI();
     } else if (pendingSavedHandle) {
       if (connLabel) connLabel.textContent = t('saved_folder_badge', { name: pendingSavedHandle.name });
+      if (pipConnName) pipConnName.textContent = pendingSavedHandle.name;
       const recText = doc.getElementById('reconnectText');
       const recBtn = doc.getElementById('reconnectBtn');
       if (recText) recText.textContent = t('reconnect_ready', { name: pendingSavedHandle.name });
       if (recBtn) recBtn.textContent = t('reconnect_btn', { name: pendingSavedHandle.name });
     } else {
       if (connLabel) connLabel.textContent = t('no_folder_linked');
+      if (pipConnName) pipConnName.textContent = t('no_folder_linked');
     }
+    updateTokenEstimatorUI();
   }
 
   function setLanguage(lang, animate = true) {
@@ -2402,7 +2724,6 @@
     } catch (e) {}
   }
 
-  // Save & Load Baseline Snapshot in IndexedDB so manual change status survives page refresh
   async function saveBaselineSnapshotToDB() {
     if (!dirHandle) return;
     try {
@@ -2459,6 +2780,7 @@
       });
       mainWindow.localStorage.setItem(STORAGE_KEYS.UNCHECKED, JSON.stringify(unchecked));
       updateSelectedCountHeader();
+      updateTokenEstimatorUI();
     } catch (e) {}
   }
 
@@ -2469,6 +2791,7 @@
       const sysChk = doc.getElementById('includePromptChk');
       if (promptEl) mainWindow.localStorage.setItem(STORAGE_KEYS.PROMPT, promptEl.value);
       if (sysChk) mainWindow.localStorage.setItem(STORAGE_KEYS.SYSPROMPT, sysChk.checked ? '1' : '0');
+      updateTokenEstimatorUI();
     } catch (e) {}
   }
 
@@ -2486,6 +2809,25 @@
       }
       isFileDrawerCollapsed = (savedCollapsed === '1');
     } catch (e) {}
+  }
+
+  // === POINT 2: VERIFY ROOT DIRECTORY STILL EXISTS (NOT RENAMED OR DELETED) ===
+  async function verifyRootFolderExists(handle) {
+    if (!handle) return false;
+    try {
+      const perm = await handle.queryPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') return false;
+      const iter = handle.entries();
+      await iter.next();
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  async function handleMissingRootFolder(customName = '') {
+    const missingName = customName || (dirHandle ? dirHandle.name : '') || (pendingSavedHandle ? pendingSavedHandle.name : 'Project');
+    await disconnectFolder(true, missingName);
   }
 
   async function initSavedSession() {
@@ -2507,13 +2849,19 @@
     try {
       const perm = await savedHandle.queryPermission({ mode: 'readwrite' });
       if (perm === 'granted') {
-        // Silent restore on page refresh ('none'), preserving saved baseline from IndexedDB
+        const exists = await verifyRootFolderExists(savedHandle);
+        if (!exists) {
+          await handleMissingRootFolder(savedHandle.name);
+          return;
+        }
         await activateConnectedFolder(savedHandle, true, 'none', true);
       } else {
         pendingSavedHandle = savedHandle;
         const doc = getDoc();
         doc.getElementById('connDot').className = 'status-dot pending';
+        doc.getElementById('pipConnDot').className = 'status-dot pending';
         doc.getElementById('connLabel').textContent = t('saved_folder_badge', { name: savedHandle.name });
+        doc.getElementById('pipConnName').textContent = savedHandle.name;
         doc.getElementById('reconnectText').textContent = t('reconnect_ready', { name: savedHandle.name });
         doc.getElementById('reconnectBtn').textContent = t('reconnect_btn', { name: savedHandle.name });
         doc.getElementById('reconnectBox').classList.add('show');
@@ -2527,6 +2875,11 @@
       const perm = await pendingSavedHandle.requestPermission({ mode: 'readwrite' });
       if (perm === 'granted') {
         const handleToActivate = pendingSavedHandle;
+        const exists = await verifyRootFolderExists(handleToActivate);
+        if (!exists) {
+          await handleMissingRootFolder(handleToActivate.name);
+          return;
+        }
         pendingSavedHandle = null;
         await activateConnectedFolder(handleToActivate, true, 'connect', true);
       } else {
@@ -2554,11 +2907,17 @@
 
     const doc = getDoc();
     doc.getElementById('connDot').className = 'status-dot connected';
+    doc.getElementById('pipConnDot').className = 'status-dot connected';
     doc.getElementById('connLabel').textContent = handle.name;
+    doc.getElementById('pipConnName').textContent = handle.name;
     doc.getElementById('autoSyncBadge').classList.add('active');
     doc.getElementById('folderCtrlBtns').classList.add('active');
     doc.getElementById('reconnectBox').classList.remove('show');
     doc.getElementById('folderEmptyState').style.display = 'none';
+
+    if (notificationMode === 'connect') {
+      triggerWorkspaceAnimation('connect');
+    }
 
     updateUndoBoxUI();
     await refreshFileList(preserveChecks, notificationMode, !loadedExistingBaseline);
@@ -2590,6 +2949,11 @@
     const kb = bytes / 1024;
     if (kb < 1024) return kb.toFixed(kb >= 10 ? 0 : 1) + ' KB';
     return (kb / 1024).toFixed(1) + ' MB';
+  }
+
+  function formatCompactNumber(num) {
+    if (num < 1000) return String(num);
+    return (num / 1000).toFixed(1) + 'k';
   }
 
   function getActiveToastContainer() {
@@ -2684,7 +3048,7 @@
     });
   }
 
-  // === BILINGUAL MASTER SYSTEM PROMPT FOR THE AI ===
+  // === POINT 3: BILINGUAL MASTER SYSTEM PROMPT WITH OUTPUT TOKEN LIMIT PROTECTION ===
   function getMasterSystemPrompt() {
     if (currentLang === 'nl') {
       return `=== SYSTEEM-INSTRUCTIE: LIVE PROJECT-AGENT & SMART DIFF UPDATER (AI FOLDER SYNC) ===
@@ -2701,21 +3065,18 @@ Je werkt via mijn "AI Folder Sync" tool rechtstreeks in mijn lokale projectmap (
 - Elke keer dat jij mij een JSON-update stuurt, werk je jouw eigen geheugen direct bij naar die NIEUWE situatie.
 - Als ik tussentijds zelf handmatig bestanden aanpas en deze meestuur onder "=== TUSSENTIJDSE HANDMATIGE LOKALE WIJZIGINGEN ===", vervang je in jouw geheugen direct de oude versie van die bestanden door mijn nieuwste versie voordat je mijn opdracht uitvoert.
 
-3. SLIMME JSON-UPDATES: STUUR ALLEEN TOEVOEGINGEN, WIJZIGINGEN EN VERWIJDERINGEN TERUG!
-Omdat je mijn bestaande code al volledig hebt ontvangen, is het verboden om ongewijzigde bestanden of ongewijzigde code opnieuw terug te sturen:
+3. SLIMME JSON-UPDATES & BESCHERMING TEGEN OUTPUT TOKEN-LIMIET:
+Omdat je mijn bestaande code al volledig hebt ontvangen én om te voorkomen dat jouw JSON-antwoord halverwege wordt afgekapt door de maximale output token-limiet:
 - LAAT ONGEWIJZIGDE BESTANDEN VOLLEDIG WEG uit de JSON!
-- BESTAANDE BESTANDEN AANPASSEN ("edit"): Gebruik voor élke wijziging in een bestaand bestand ALTIJD "edit" met gerichte {"search": "...", "replace": "..."} blokken.
-  * Code wijzigen: Zet in "search" exact het oude codeblok uit het bestand en in "replace" het aangepaste codeblok.
-  * Code toevoegen: Zet in "search" een paar unieke omliggende regels als ankerpunt, en zet in "replace" diezelfde regels inclusief de nieuw toegevoegde code.
-  * Code verwijderen: Zet in "search" de regels die weg moeten en maak "replace" leeg ("") of vervang het ankerpunt zonder de verwijderde regels.
-  * Zorg dat elk "search" blok 100% letterlijk overeenkomt met de actuele code in het bestand en genoeg context (2-5 regels) bevat om uniek te zijn.
-- NIEUWE BESTANDEN MAKEN ("files"): Gebruik "files" ALLEEN voor gloednieuwe bestanden die nog niet bestonden (bijv. bij een leeg project of een nieuw toegevoegd bestand). Schrijf bij een nieuw bestand altijd de 100% volledige code.
-- MAPPEN MAKEN ("folders"): Array met nieuwe mappen/submappen (bijv. ["css", "js", "assets/img"]).
-- BESTANDEN VERPLAATSEN/HERNOEMEN ("move"): Object om bestaande bestanden of foto's te verplaatsen zonder inhoud opnieuw te typen (bijv. {"oud.css": "css/style.css"}). De tool voert EERST "move" uit en DAARNA pas "edit"!
+- HOUD JE JSON ZO COMPACT MOGELIJK: Gebruik voor elke wijziging in een bestaand bestand ALTIJD "edit" met minimale {"search": "...", "replace": "..."} blokken (slechts 2 tot 4 unieke omliggende anker-regels in "search").
+- GROTE TAKEN OPSPLITSEN: Als een opdracht zo enorm groot is dat de JSON-code mogelijk jouw maximale antwoordlengte (output token-limiet) overschrijdt, splits de uitvoering dan op in 2 logische delen: stuur in dit bericht Deel 1 als een 100% geldig en afgesloten JSON-blok en meld dat ik om Deel 2 kan vragen.
+- NIEUWE BESTANDEN MAKEN ("files"): Gebruik "files" ALLEEN voor gloednieuwe bestanden die nog niet bestonden.
+- MAPPEN MAKEN ("folders"): Array met nieuwe mappen/submappen (bijv. ["css", "js"]).
+- BESTANDEN VERPLAATSEN/HERNOEMEN ("move"): Object om bestaande bestanden te verplaatsen (bijv. {"oud.css": "css/style.css"}).
 - BESTANDEN VERWIJDEREN ("delete"): Array met paden van bestanden of mappen die weg moeten.
 
 4. VERPLICHT ANTWOORDFORMAAT:
-Leg eerst kort en helder uit wat je hebt gebouwd of aangepast. Eindig je antwoord bij elke wijziging ALTIJD met exact één geldig JSON-codeblok (\`\`\`json ... \`\`\`):
+Leg eerst kort en helder uit wat je hebt gebouwd of aangepast. Eindig je antwoord bij elke wijziging ALTIJD met exact één volledig afgesloten, geldig JSON-codeblok (\`\`\`json ... \`\`\`):
 
 \`\`\`json
 {
@@ -2753,21 +3114,18 @@ You are working directly inside my local project folder (including all subfolder
 - Every time you send me a JSON update, immediately update your internal memory of the files to reflect that NEW state.
 - If I manually edit files locally between messages and send them under "=== MANUAL LOCAL CHANGES SINCE LAST SYNC ===", immediately update your internal memory with those latest file contents before executing my new prompt.
 
-3. SMART JSON UPDATES: ONLY RETURN ADDITIONS, EDITS, AND DELETIONS!
-Because you have already received my existing code in full, it is strictly forbidden to return unchanged files or unchanged code:
+3. SMART JSON UPDATES & OUTPUT TOKEN LIMIT PROTECTION:
+Because you have already received my existing code in full AND to prevent your JSON response from being cut off halfway by output token limits:
 - COMPLETELY OMIT UNCHANGED FILES from the JSON!
-- MODIFYING EXISTING FILES ("edit"): For every change in an existing file, ALWAYS use "edit" with targeted {"search": "...", "replace": "..."} blocks.
-  * Modifying code: Put the exact old code block from the file in "search" and the updated code block in "replace".
-  * Adding code: Put a few unique surrounding lines in "search" as an anchor, and put those same lines plus the newly added code in "replace".
-  * Removing code: Put the lines to be removed in "search" and leave "replace" empty ("") or replace the anchor without the deleted lines.
-  * Ensure every "search" block matches the current code in the file 100% literally and includes enough context (2-5 lines) to be unique.
-- CREATING NEW FILES ("files"): Use "files" ONLY for brand-new files that did not exist yet (e.g., in an empty project or when adding a new file). Always write 100% complete code for a new file.
-- CREATING FOLDERS ("folders"): Array of new folders/subfolders (e.g., ["css", "js", "assets/img"]).
-- MOVING/RENAMING FILES ("move"): Object to move or rename existing files or images without retyping their contents (e.g., {"old.css": "css/style.css"}). The tool executes "move" FIRST and "edit" AFTERWARDS!
+- KEEP YOUR JSON AS COMPACT AS POSSIBLE: For every change in an existing file, ALWAYS use "edit" with minimal {"search": "...", "replace": "..."} blocks (include only 2 to 4 unique surrounding anchor lines in "search").
+- SPLIT MASSIVE TASKS IF NEEDED: If a task is so large that the JSON output might exceed your maximum output token limit, split the update into 2 logical steps: return Part 1 now in a 100% complete, valid JSON block and let me know I can ask for Part 2 next.
+- CREATING NEW FILES ("files"): Use "files" ONLY for brand-new files that did not exist yet.
+- CREATING FOLDERS ("folders"): Array of new folders/subfolders (e.g., ["css", "js"]).
+- MOVING/RENAMING FILES ("move"): Object to move or rename existing files (e.g., {"old.css": "css/style.css"}).
 - DELETING FILES ("delete"): Array of file or folder paths to delete.
 
 4. REQUIRED RESPONSE FORMAT:
-First explain briefly and clearly what you built or modified. End your response for every change ALWAYS with exactly one valid JSON code block (\`\`\`json ... \`\`\`):
+First explain briefly and clearly what you built or modified. End your response for every change ALWAYS with exactly one complete, valid JSON code block (\`\`\`json ... \`\`\`):
 
 \`\`\`json
 {
@@ -2791,7 +3149,81 @@ First explain briefly and clearly what you built or modified. End your response 
 \`\`\``;
   }
 
-  // === FLOATING PICTURE-IN-PICTURE WINDOW ===
+  // === POINT 3: LIVE INPUT TOKEN ESTIMATOR ===
+  function updateTokenEstimatorUI() {
+    const doc = getDoc();
+    const countEl = doc.getElementById('tokenCountVal');
+    const pillEl = doc.getElementById('tokenLevelPill');
+    const fillEl = doc.getElementById('tokenMeterFill');
+    const pipStatsEl = doc.getElementById('pipStatsPill');
+
+    const includeSys = doc.getElementById('includePromptChk')?.checked;
+    const userPrompt = doc.getElementById('userPromptInput')?.value || '';
+    const checks = doc.querySelectorAll('.file-chk');
+
+    let totalChars = 0;
+    if (includeSys) {
+      totalChars += getMasterSystemPrompt().length;
+    }
+
+    let selectedFileCount = 0;
+    if (dirHandle) {
+      totalChars += 140 + (scannedFiles.length * 26);
+      checks.forEach(chk => {
+        if (chk.checked) {
+          const item = scannedFiles[Number(chk.getAttribute('data-idx'))];
+          if (item && item.content) {
+            totalChars += item.content.length + 75;
+            selectedFileCount++;
+          }
+        }
+      });
+    }
+
+    if (userPrompt.trim().length > 0) {
+      totalChars += userPrompt.length + 220;
+    }
+
+    const estTokens = (dirHandle || userPrompt.trim().length > 0)
+      ? Math.max(1, Math.ceil(totalChars / 3.8))
+      : 0;
+
+    if (countEl) {
+      countEl.textContent = t('tok_unit', { count: estTokens.toLocaleString() });
+    }
+
+    if (pipStatsEl) {
+      const totalFiles = scannedFiles.filter(f => f.kind === 'file').length;
+      pipStatsEl.textContent = t('pip_stats_badge', {
+        files: dirHandle ? totalFiles : 0,
+        tokens: formatCompactNumber(estTokens)
+      });
+    }
+
+    if (pillEl && fillEl) {
+      pillEl.classList.remove('tok-low', 'tok-med', 'tok-high');
+      if (estTokens < 30000) {
+        pillEl.classList.add('tok-low');
+        pillEl.textContent = t('tok_low');
+        const pct = estTokens === 0 ? 3 : Math.max(5, Math.min(38, Math.round((estTokens / 30000) * 38)));
+        fillEl.style.width = `${pct}%`;
+        fillEl.style.backgroundColor = 'var(--green)';
+      } else if (estTokens <= 120000) {
+        pillEl.classList.add('tok-med');
+        pillEl.textContent = t('tok_med');
+        const pct = 38 + Math.min(40, Math.round(((estTokens - 30000) / 90000) * 40));
+        fillEl.style.width = `${pct}%`;
+        fillEl.style.backgroundColor = 'var(--amber)';
+      } else {
+        pillEl.classList.add('tok-high');
+        pillEl.textContent = t('tok_high');
+        fillEl.style.width = '100%';
+        fillEl.style.backgroundColor = 'var(--red)';
+      }
+    }
+  }
+
+  // === POINT 4: CLEAN FLOATING PICTURE-IN-PICTURE WINDOW ===
   async function toggleFloatingPiP() {
     if (!('documentPictureInPicture' in mainWindow)) {
       showStatus('pipNotice', 'warn', t('st_pip_unsupported_title'), t('st_pip_unsupported_desc'));
@@ -2802,7 +3234,7 @@ First explain briefly and clearly what you built or modified. End your response 
       return;
     }
     try {
-      const newPipWin = await mainWindow.documentPictureInPicture.requestWindow({ width: 420, height: 660 });
+      const newPipWin = await mainWindow.documentPictureInPicture.requestWindow({ width: 390, height: 570 });
       pipWindow = newPipWin;
 
       const styleClone = mainWindow.document.getElementById('coreStyles').cloneNode(true);
@@ -2821,6 +3253,9 @@ First explain briefly and clearly what you built or modified. End your response 
         }
       });
 
+      // Collapse file list drawer by default when entering PiP for a clean compact view
+      isFileDrawerCollapsed = true;
+
       const panel = mainWindow.document.getElementById('workspacePanel');
       panel.classList.add('lang-transition-target');
       newPipWin.document.body.appendChild(panel);
@@ -2829,6 +3264,7 @@ First explain briefly and clearly what you built or modified. End your response 
       applyTranslationsToRoot(newPipWin.document);
       renderFileTreeUI();
       updateUndoBoxUI();
+      updateTokenEstimatorUI();
 
       newPipWin.addEventListener('pagehide', () => {
         restorePanelFromPiP(newPipWin);
@@ -2851,7 +3287,15 @@ First explain briefly and clearly what you built or modified. End your response 
     if (!closingWin || pipWindow === closingWin) {
       pipWindow = null;
     }
+
+    // Restore user's saved drawer collapse preference on main screen
+    try {
+      isFileDrawerCollapsed = (mainWindow.localStorage.getItem(STORAGE_KEYS.COLLAPSED) === '1');
+    } catch (e) {}
+
     applyTranslationsToRoot(mainWindow.document);
+    updateFileDrawerToggleUI();
+    updateTokenEstimatorUI();
   }
 
   function closeFloatingPiP() {
@@ -2891,12 +3335,16 @@ First explain briefly and clearly what you built or modified. End your response 
     }
   }
 
-  async function disconnectFolder() {
+  async function disconnectFolder(isMissingOnDisk = false, missingFolderName = '') {
     stopAutoRefreshWatcher();
+    triggerWorkspaceAnimation('disconnect');
+    await yieldFrame(220);
+
     dirHandle = null;
     pendingSavedHandle = null;
     scannedFiles = [];
     lastUndoSnapshot = null;
+    lastTruncatedTail = '';
     aiBaselineSnapshot.clear();
     hasBaselineInitialized = false;
     await clearDirHandleFromDB();
@@ -2904,7 +3352,9 @@ First explain briefly and clearly what you built or modified. End your response 
 
     const doc = getDoc();
     doc.getElementById('connDot').className = 'status-dot';
+    doc.getElementById('pipConnDot').className = 'status-dot';
     doc.getElementById('connLabel').textContent = t('no_folder_linked');
+    doc.getElementById('pipConnName').textContent = t('no_folder_linked');
     doc.getElementById('autoSyncBadge').classList.remove('active');
     doc.getElementById('folderCtrlBtns').classList.remove('active');
     doc.getElementById('reconnectBox').classList.remove('show');
@@ -2912,11 +3362,23 @@ First explain briefly and clearly what you built or modified. End your response 
     doc.getElementById('fileTreeWrap').classList.remove('show');
     doc.getElementById('fileSelectorBox').innerHTML = '';
     doc.getElementById('deltaSyncBanner').classList.remove('show');
+    doc.getElementById('truncatedJsonBox')?.classList.remove('show');
 
     updateUndoBoxUI();
+    updateTokenEstimatorUI();
     hideStatus('updateStatus');
     hideStatus('exportStatus');
-    showStatus('folderStatus', 'info', t('st_folder_closed_title'), t('st_folder_closed_desc'));
+
+    if (isMissingOnDisk) {
+      showStatus(
+        'folderStatus',
+        'warn',
+        t('st_folder_missing_title', { name: missingFolderName }),
+        t('st_folder_missing_desc')
+      );
+    } else {
+      showStatus('folderStatus', 'info', t('st_folder_closed_title'), t('st_folder_closed_desc'));
+    }
   }
 
   async function scanDir(handle, path = "") {
@@ -3040,9 +3502,11 @@ First explain briefly and clearly what you built or modified. End your response 
 
   function toggleFileDrawer() {
     isFileDrawerCollapsed = !isFileDrawerCollapsed;
-    try {
-      mainWindow.localStorage.setItem(STORAGE_KEYS.COLLAPSED, isFileDrawerCollapsed ? '1' : '0');
-    } catch (e) {}
+    if (!pipWindow || pipWindow.closed) {
+      try {
+        mainWindow.localStorage.setItem(STORAGE_KEYS.COLLAPSED, isFileDrawerCollapsed ? '1' : '0');
+      } catch (e) {}
+    }
     updateFileDrawerToggleUI();
   }
 
@@ -3161,6 +3625,7 @@ First explain briefly and clearly what you built or modified. End your response 
     updateFileDrawerToggleUI();
     updateSelectedCountHeader();
     renderDeltaBannerUI();
+    updateTokenEstimatorUI();
 
     return { codeFileCount, totalLines, assetCount };
   }
@@ -3168,11 +3633,28 @@ First explain briefly and clearly what you built or modified. End your response 
   // notificationMode: 'none' | 'connect' | 'manual_refresh'
   async function refreshFileList(preserveChecks = true, notificationMode = 'none', resetBaseline = false) {
     if (!dirHandle) return;
+
+    // Verify the linked folder still exists on disk (was not renamed or deleted)
+    const exists = await verifyRootFolderExists(dirHandle);
+    if (!exists) {
+      await handleMissingRootFolder(dirHandle.name);
+      return;
+    }
+
+    if (notificationMode === 'manual_refresh') {
+      triggerWorkspaceAnimation('refresh');
+    }
+
     if (!preserveChecks) {
       mainWindow.localStorage.removeItem(STORAGE_KEYS.UNCHECKED);
     }
 
-    scannedFiles = await scanDir(dirHandle);
+    try {
+      scannedFiles = await scanDir(dirHandle);
+    } catch (scanErr) {
+      await handleMissingRootFolder(dirHandle.name);
+      return;
+    }
 
     for (let i = 0; i < scannedFiles.length; i++) {
       const item = scannedFiles[i];
@@ -3230,7 +3712,7 @@ First explain briefly and clearly what you built or modified. End your response 
     }
   }
 
-  // === AUTOMATIC LIVE FILE WATCHER (AUTO-REFRESH ON EXTERNAL CHANGES) ===
+  // === AUTOMATIC LIVE FILE WATCHER (WITH MISSING/RENAMED ROOT FOLDER DETECTION) ===
   function startAutoRefreshWatcher() {
     stopAutoRefreshWatcher();
     autoRefreshInterval = mainWindow.setInterval(() => {
@@ -3247,9 +3729,18 @@ First explain briefly and clearly what you built or modified. End your response 
 
   async function checkExternalFolderChanges() {
     if (!dirHandle || isMutatingDisk) return;
+
+    // Point 2: Check if the root folder itself was renamed or deleted on disk
+    const stillExists = await verifyRootFolderExists(dirHandle);
+    if (!stillExists) {
+      await handleMissingRootFolder(dirHandle.name);
+      return;
+    }
+
     try {
       const currentEntries = await scanDir(dirHandle);
       if (currentEntries.length !== scannedFiles.length) {
+        triggerWorkspaceAnimation('refresh');
         await refreshFileList(true, 'none', false);
         showStatus('folderStatus', 'info', t('st_auto_refresh_title'), t('st_auto_refresh_desc'));
         return;
@@ -3274,10 +3765,15 @@ First explain briefly and clearly what you built or modified. End your response 
       }
 
       if (changed) {
+        triggerWorkspaceAnimation('refresh');
         await refreshFileList(true, 'none', false);
         showStatus('folderStatus', 'info', t('st_auto_refresh_title'), t('st_auto_refresh_desc'));
       }
-    } catch (e) {}
+    } catch (e) {
+      if (e && (e.name === 'NotFoundError' || e.name === 'InvalidStateError')) {
+        await handleMissingRootFolder(dirHandle ? dirHandle.name : '');
+      }
+    }
   }
 
   function toggleAllFiles(state) {
@@ -3299,6 +3795,7 @@ First explain briefly and clearly what you built or modified. End your response 
     }
 
     await checkExternalFolderChanges();
+    if (!dirHandle) return; // In case folder was missing
 
     const checks = doc.querySelectorAll('.file-chk');
     const includePrompt = doc.getElementById('includePromptChk')?.checked;
@@ -3353,7 +3850,7 @@ First explain briefly and clearly what you built or modified. End your response 
         if (totalFilesCount === 0) {
           out += `\n(Opmerking: Dit project is nog 100% leeg. Bouw alle mappen en bestanden vanaf nul op en geef het volledige resultaat terug in één geldig \`\`\`json ... \`\`\` codeblok!)`;
         } else {
-          out += `\n(Opmerking: Geef je wijzigingen terug in één geldig \`\`\`json ... \`\`\` codeblok. Laat ongewijzigde bestanden volledig weg, gebruik "edit" met search/replace blokken voor aanpassingen in bestaande bestanden, "files" alleen voor gloednieuwe bestanden en "delete" voor verwijderingen!)`;
+          out += `\n(Opmerking: Geef je wijzigingen terug in één geldig \`\`\`json ... \`\`\` codeblok. Laat ongewijzigde bestanden volledig weg, houd "edit" zoekblokken compact om de token-limiet niet te overschrijden, gebruik "files" alleen voor gloednieuwe bestanden en "delete" voor verwijderingen!)`;
         }
       } else {
         if (totalFilesCount === 0) {
@@ -3403,7 +3900,7 @@ First explain briefly and clearly what you built or modified. End your response 
         if (totalFilesCount === 0) {
           out += `\n(Note: This project is currently 100% empty. Build all folders and files from scratch and return the complete result in a single valid \`\`\`json ... \`\`\` code block!)`;
         } else {
-          out += `\n(Note: Return your changes in a single valid \`\`\`json ... \`\`\` code block. Completely omit unchanged files, use "edit" with search/replace blocks for changes to existing files, "files" only for brand-new files, and "delete" for removals!)`;
+          out += `\n(Note: Return your changes in a single valid \`\`\`json ... \`\`\` code block. Completely omit unchanged files, keep "edit" search blocks compact to avoid output token limits, use "files" only for brand-new files, and "delete" for removals!)`;
         }
       } else {
         if (totalFilesCount === 0) {
@@ -3414,7 +3911,6 @@ First explain briefly and clearly what you built or modified. End your response 
       }
     }
 
-    // Update AI baseline snapshot in memory AND IndexedDB
     captureBaselineSnapshot();
     renderFileTreeUI();
 
@@ -3461,6 +3957,7 @@ First explain briefly and clearly what you built or modified. End your response 
     }
 
     await checkExternalFolderChanges();
+    if (!dirHandle) return;
 
     const userPrompt = (doc.getElementById('userPromptInput')?.value || "").trim();
     const diff = getManualChangesAgainstBaseline();
@@ -3501,7 +3998,7 @@ First explain briefly and clearly what you built or modified. End your response 
 
       out += `\n=== MIJN VERVOLG-OPDRACHT / PROMPT ===\n`;
       out += userPrompt
-        ? `${userPrompt}\n\n(Herinnering voor JSON-output: Gebruik voor "search" blokken de nieuwste code zoals hierboven gesynchroniseerd. Stuur onderaan je antwoord exact één \`\`\`json ... \`\`\` codeblok terug met ALLEEN de toevoegingen, wijzigingen ("edit") en verwijderingen!)`
+        ? `${userPrompt}\n\n(Herinnering voor JSON-output: Gebruik voor "search" blokken de nieuwste code zoals hierboven gesynchroniseerd. Stuur onderaan je antwoord exact één geldig en compact \`\`\`json ... \`\`\` codeblok terug met ALLEEN de toevoegingen, wijzigingen ("edit") en verwijderingen!)`
         : `Ik heb hierboven mijn tussentijdse handmatige wijzigingen gesynchroniseerd. Bevestig kort dat je jouw geheugen hebt bijgewerkt met deze nieuwste versie van de bestanden.`;
     } else {
       out += `=== MANUAL LOCAL CHANGES SINCE LAST SYNC (PROJECT FOLDER "${dirHandle.name}") ===\n`;
@@ -3527,7 +4024,7 @@ First explain briefly and clearly what you built or modified. End your response 
 
       out += `\n=== MY FOLLOW-UP TASK / PROMPT ===\n`;
       out += userPrompt
-        ? `${userPrompt}\n\n(Reminder for JSON output: Base your "search" blocks on the latest synced code above. End your response with exactly one \`\`\`json ... \`\`\` code block containing ONLY the additions, edits ("edit"), and deletions!)`
+        ? `${userPrompt}\n\n(Reminder for JSON output: Base your "search" blocks on the latest synced code above. End your response with exactly one valid, compact \`\`\`json ... \`\`\` code block containing ONLY the additions, edits ("edit"), and deletions!)`
         : `I have synced my manual local file changes above. Briefly confirm that you have updated your internal memory with these latest file versions.`;
     }
 
@@ -3549,8 +4046,8 @@ First explain briefly and clearly what you built or modified. End your response 
     }
 
     const out = (currentLang === 'nl')
-      ? `=== VERVOLG-OPDRACHT / PROMPT ===\n${userPrompt}\n\n(Herinnering voor JSON-output: Stuur onderaan je antwoord exact één \`\`\`json ... \`\`\` codeblok terug met ALLEEN de toevoegingen, wijzigingen en verwijderingen. Laat ongewijzigde bestanden weg en gebruik "edit" met {"search": "...", "replace": "..."} voor aanpassingen in bestaande bestanden!)`
-      : `=== FOLLOW-UP TASK / PROMPT ===\n${userPrompt}\n\n(Reminder for JSON output: End your response with exactly one \`\`\`json ... \`\`\` code block containing ONLY the additions, edits, and deletions. Omit unchanged files and use "edit" with {"search": "...", "replace": "..."} for modifications in existing files!)`;
+      ? `=== VERVOLG-OPDRACHT / PROMPT ===\n${userPrompt}\n\n(Herinnering voor JSON-output: Stuur onderaan je antwoord exact één compact \`\`\`json ... \`\`\` codeblok terug met ALLEEN de toevoegingen, wijzigingen en verwijderingen. Laat ongewijzigde bestanden weg en gebruik "edit" met {"search": "...", "replace": "..."} voor aanpassingen in bestaande bestanden!)`
+      : `=== FOLLOW-UP TASK / PROMPT ===\n${userPrompt}\n\n(Reminder for JSON output: End your response with exactly one compact \`\`\`json ... \`\`\` code block containing ONLY the additions, edits, and deletions. Omit unchanged files and use "edit" with {"search": "...", "replace": "..."} for modifications in existing files!)`;
 
     try {
       await getActiveNavigator().clipboard.writeText(out);
@@ -3564,7 +4061,23 @@ First explain briefly and clearly what you built or modified. End your response 
     }
   }
 
-  // === STEP 3: SMART JSON-DIFF PROCESSOR, LIVE PROGRESS & 1-CLICK UNDO ===
+  // === POINT 3: COPY RECOVERY PROMPT WHEN AI JSON WAS CUT OFF BY OUTPUT TOKEN LIMIT ===
+  async function copyTruncatedJsonRecoveryPrompt() {
+    const snippet = lastTruncatedTail ? `\n\nLast lines before cut-off:\n\`\`\`\n...${lastTruncatedTail}\n\`\`\`\n` : '\n';
+
+    const out = (currentLang === 'nl')
+      ? `=== HERSTEL-OPDRACHT: JE VORIGE JSON-BLOK WAS AFGEKAPT (OUTPUT TOKEN-LIMIET) ===\nJe vorige antwoord met het JSON-codeblok is halverwege afgebroken doordat je de maximale output token-limiet hebt bereikt.${snippet}Stuur de update alsjeblieft opnieuw, maar doe het als volgt zodat de JSON 100% geldig en volledig afgesloten is:\n1. Houd de JSON zo compact mogelijk: gebruik bij bestaande bestanden uitsluitend korte "edit" blokken (met slechts 2-4 anker-regels in "search") en laat alle ongewijzigde bestanden of ongewijzigde functies weg.\n2. Als de wijziging te groot is voor één bericht, splits de JSON-update dan op in 2 delen: stuur nu eerst **Deel 1** in één volledig geldig en afgesloten \`\`\`json ... \`\`\` codeblok, en geef aan dat ik daarna om Deel 2 kan vragen.`
+      : `=== RECOVERY PROMPT: YOUR PREVIOUS JSON BLOCK WAS CUT OFF (OUTPUT TOKEN LIMIT) ===\nYour previous response containing the JSON code block was cut off halfway because it reached the maximum output token limit.${snippet}Please send the update again, following these rules so the JSON is 100% valid and properly closed:\n1. Keep the JSON as compact as possible: for existing files, use only brief "edit" blocks (with just 2-4 anchor lines in "search") and omit all unchanged files or unchanged code.\n2. If the update is too large for a single message, split the JSON update into 2 parts: send **Part 1** now inside a single complete, valid \`\`\`json ... \`\`\` code block, and let me know I can ask for Part 2 next.`;
+
+    try {
+      await getActiveNavigator().clipboard.writeText(out);
+      showStatus('updateStatus', 'info', t('st_continue_copied_title'), t('st_continue_copied_desc'));
+    } catch (err) {
+      showStatus('updateStatus', 'error', t('st_copy_err_title'), err.message);
+    }
+  }
+
+  // === STEP 3: SMART JSON-DIFF PROCESSOR, TRUNCATION DETECTOR, LIVE PROGRESS & UNDO ===
   function cleanPath(path, rootName) {
     let p = String(path || "").replace(/\\/g, '/').replace(/^\/+/, '').trim();
     if (rootName && p.startsWith(rootName + '/')) {
@@ -3664,6 +4177,12 @@ First explain briefly and clearly what you built or modified. End your response 
   async function undoLastUpdate() {
     if (!dirHandle || !lastUndoSnapshot || isMutatingDisk) return;
 
+    const exists = await verifyRootFolderExists(dirHandle);
+    if (!exists) {
+      await handleMissingRootFolder(dirHandle.name);
+      return;
+    }
+
     isMutatingDisk = true;
     try {
       const { fileMap, existingDirs, createdFolders } = lastUndoSnapshot;
@@ -3734,6 +4253,44 @@ First explain briefly and clearly what you built or modified. End your response 
     } finally {
       isMutatingDisk = false;
     }
+  }
+
+  // Point 3: Detect if invalid JSON was caused by AI output token truncation
+  function isLikelyTruncatedJson(rawText) {
+    const text = (rawText || "").trim();
+    const hasJsonMarkers = /"(?:folders|files|create|edit|move|delete|search|replace)"\s*:/i.test(text) || /```json/i.test(text);
+    const firstBrace = text.indexOf('{');
+    if (!hasJsonMarkers || firstBrace === -1) return false;
+
+    const sub = text.slice(firstBrace);
+    let inString = false;
+    let escaped = false;
+    let openBraces = 0;
+    let openBrackets = 0;
+
+    for (let i = 0; i < sub.length; i++) {
+      const ch = sub[i];
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (!inString) {
+        if (ch === '{') openBraces++;
+        else if (ch === '}') openBraces--;
+        else if (ch === '[') openBrackets++;
+        else if (ch === ']') openBrackets--;
+      }
+    }
+
+    return inString || openBraces > 0 || openBrackets > 0;
   }
 
   function extractJsonFromText(rawText) {
@@ -3868,13 +4425,24 @@ First explain briefly and clearly what you built or modified. End your response 
       }
     }
 
+    const exists = await verifyRootFolderExists(dirHandle);
+    if (!exists) {
+      await handleMissingRootFolder(dirHandle.name);
+      return;
+    }
+
     if (!rawInput || !String(rawInput).trim()) {
       return showStatus('updateStatus', 'warn', t('st_no_json_title'), t('st_no_json_desc'));
     }
 
+    const doc = getDoc();
+    const truncBox = doc.getElementById('truncatedJsonBox');
+
     isMutatingDisk = true;
     try {
       const patch = extractJsonFromText(rawInput);
+      if (truncBox) truncBox.classList.remove('show');
+      lastTruncatedTail = '';
 
       const tasks = [];
       if (patch.folders && Array.isArray(patch.folders)) {
@@ -4035,7 +4603,6 @@ First explain briefly and clearly what you built or modified. End your response 
         }
       }
 
-      // Save Undo snapshot & update AI baseline in IndexedDB
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       lastUndoSnapshot = {
@@ -4046,7 +4613,6 @@ First explain briefly and clearly what you built or modified. End your response 
       };
       updateUndoBoxUI();
 
-      const doc = getDoc();
       const statusEl = doc.getElementById('progressStatusText');
       if (statusEl) statusEl.textContent = t('prog_done', { total: totalTasks });
 
@@ -4073,12 +4639,25 @@ First explain briefly and clearly what you built or modified. End your response 
       }
     } catch (err) {
       setLiveProgress(false);
-      showStatus(
-        'updateStatus',
-        'error',
-        t('st_invalid_json_title'),
-        t('st_invalid_json_desc', { msg: err.message })
-      );
+      // Point 3: Check if the error was caused by a cut-off / truncated JSON due to AI output token limit
+      if (isLikelyTruncatedJson(rawInput)) {
+        lastTruncatedTail = String(rawInput).replace(/```+\s*$/, '').trim().slice(-160);
+        if (truncBox) truncBox.classList.add('show');
+        showStatus(
+          'updateStatus',
+          'error',
+          t('st_truncated_json_title'),
+          t('st_truncated_json_desc')
+        );
+      } else {
+        if (truncBox) truncBox.classList.remove('show');
+        showStatus(
+          'updateStatus',
+          'error',
+          t('st_invalid_json_title'),
+          t('st_invalid_json_desc', { msg: err.message })
+        );
+      }
     } finally {
       isMutatingDisk = false;
     }
@@ -4121,12 +4700,12 @@ First explain briefly and clearly what you built or modified. End your response 
 
     doc.getElementById('closePipPlaceholderBtn')?.addEventListener('click', () => closeFloatingPiP());
     doc.getElementById('closePipFloatingBtn')?.addEventListener('click', () => closeFloatingPiP());
+    doc.getElementById('pipRefreshBtn')?.addEventListener('click', () => refreshFileList(true, 'manual_refresh', false));
     doc.getElementById('togglePipBtn')?.addEventListener('click', () => toggleFloatingPiP());
 
-    // Manual refresh passes 'manual_refresh' so it shows the distinct "Folder refreshed" toast
     doc.getElementById('refreshFolderBtn')?.addEventListener('click', () => refreshFileList(true, 'manual_refresh', false));
     doc.getElementById('switchFolderBtn')?.addEventListener('click', () => selectFolder());
-    doc.getElementById('disconnectFolderBtn')?.addEventListener('click', () => disconnectFolder());
+    doc.getElementById('disconnectFolderBtn')?.addEventListener('click', () => disconnectFolder(false));
 
     doc.getElementById('copySysPromptBtn')?.addEventListener('click', () => copyPrompt());
     doc.getElementById('reconnectBtn')?.addEventListener('click', () => reconnectSavedFolder());
@@ -4145,6 +4724,7 @@ First explain briefly and clearly what you built or modified. End your response 
     doc.getElementById('downloadTxtBtn')?.addEventListener('click', () => exportProject(true));
 
     doc.getElementById('updateClipboardBtn')?.addEventListener('click', () => updateFromClipboard());
+    doc.getElementById('copyContinueJsonBtn')?.addEventListener('click', () => copyTruncatedJsonRecoveryPrompt());
     doc.getElementById('undoUpdateBtn')?.addEventListener('click', () => undoLastUpdate());
     doc.getElementById('manualUpdateBtn')?.addEventListener('click', () => {
       const val = getDoc().getElementById('aiPatchInput')?.value || '';
